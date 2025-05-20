@@ -1,5 +1,3 @@
-# Peter Project - S08 模組血統紀錄器 eco_lineage_recorder.py
-
 import os
 import json
 
