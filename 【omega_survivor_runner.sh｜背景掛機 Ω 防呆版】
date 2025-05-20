@@ -1,28 +1,34 @@
 #!/bin/bash
-# Omega Survivor Core - 王者掛機腳本 vΩ
-# 包含 S01～S10 + S07.5（自動欄位檢查）
+# Omega Survivor Core - 王者掛機腳本 v1.1
+# 含 S01～S12，策略演化＋資金強化＋實戰模擬
 
 cd /mnt/data/Peter || exit 1
 
 run_step() {
-    echo "[>>>] 執行中：$1"
-    python3 "$1"
-    if [ $? -ne 0 ]; then
-        echo "[✘] 錯誤中斷：$1"
-        exit 99
-    fi
+  echo "[>>>] 執行中: $1"
+  python3 "$1"
+  if [ $? -ne 0 ]; then
+    echo "[x] 錯誤中斷: $1"
+    exit 99
+  fi
 }
 
-run_step eco_task_dispatcher.py
-run_step eco_module_builder.py
-run_step eco_simulation_engine.py
-run_step eco_fitness_evaluator.py
-run_step eco_execution_agent.py
-run_step eco_reproduction_engine.py
-run_step eco_cleaner.py
-run_step auto_schema_guard.py     # ← S07.5
-run_step eco_lineage_recorder.py
-run_step eco_royalty_manager.py
-run_step eco_lifecycle_controller.py
+run_step eco_task_dispatcher.py            # S01 - 任務派送（挑幣＋資金起始）
+run_step eco_module_builder.py             # S02 - 建模生命體（創造 run + 基因）
+run_step eco_simulation_engine.py          # S03 - 快速模擬（初篩績效）
+run_step eco_fitness_evaluator.py          # S04 - 評分並決定是否存活
 
-echo "[✓] 本輪完成：$(date)"
+run_step eco_capital_allocator.py          # ★ S12 - 分配 70 USDT 給最強王者（Winner-Takes-All）
+
+run_step eco_execution_agent.py            # S05 - RSI run 模擬交易（資金驅動）
+run_step eco_reproduction_engine.py        # S06 - 生小孩（突變混血＋基因傳遞）
+run_step eco_cleaner.py                    # S07 - 清除垃圾模組（死掉、爆炸、不動的）
+
+run_step auto_schema_guard.py              # S07.5 - 檢查 JSON 結構完整性
+run_step eco_lineage_recorder.py           # S08 - 血統圖更新
+run_step eco_royalty_manager.py            # S09 - 封王儲存 elite_pool
+run_step eco_lifecycle_controller.py       # S10 - 模組生命週期控制（自動淘汰老弱）
+
+run_step eco_realistic_sandbox.py          # S11 - 沙盤演練（真實市場模擬）
+
+echo "[✓] 本輪完成: $(date)"
