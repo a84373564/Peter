@@ -3,9 +3,9 @@ import json
 import random
 from datetime import datetime
 
-PRICE_DATA_PATH = "/mnt/data/hello/prices"
-MODULE_PATH = "/mnt/data/hello/modules"
-SANDBOX_RESULTS_PATH = "/mnt/data/hello/sandbox_results"
+PRICE_DATA_PATH = "/mnt/data/Peter/prices"
+MODULE_PATH = "/mnt/data/Peter/modules"
+SANDBOX_RESULTS_PATH = "/mnt/data/Peter/sandbox_results"
 os.makedirs(SANDBOX_RESULTS_PATH, exist_ok=True)
 
 INITIAL_CAPITAL = 70.0
