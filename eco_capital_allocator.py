@@ -1,67 +1,44 @@
-# S12 - 資金分配模組 eco_capital_allocator.py
+# eco_sandbox_reporter.py - 沙盤模擬報表整合器
 
 import os
 import json
 
 MODULE_DIR = "/mnt/data/Peter/modules"
-LOG_PATH = "/mnt/data/Peter/logs/s12_allocator.log"
 
-# 分級對照表
-ALLOC_MAP = {
-    "A+": 250,
-    "A": 150,
-    "B": 100,
-    "C": 30,
-    "F": 0
-}
+def extract_sandbox(mod):
+    result = mod.get("sandbox_result", {})
+    return {
+        "name": mod.get("name", "N/A"),
+        "symbol": mod.get("symbol", "N/A"),
+        "profit": result.get("total_profit", 0),
+        "win_rate": result.get("win_rate", 0),
+        "rounds": result.get("rounds", 0)
+    }
 
-def classify(score, sharpe, drawdown):
-    if score >= 35 and sharpe >= 2.0 and drawdown <= 2:
-        return "A+"
-    elif score >= 25 and sharpe >= 1.5 and drawdown <= 3:
-        return "A"
-    elif score >= 15 and sharpe >= 1.0:
-        return "B"
-    elif score >= 8:
-        return "C"
-    else:
-        return "F"
-
-def process_module(path):
-    with open(path, "r") as f:
-        mod = json.load(f)
-
-    score = mod.get("score", 0)
-    sharpe = mod.get("sharpe", 0)
-    drawdown = mod.get("drawdown", 10)
-    classification = classify(score, sharpe, drawdown)
-    new_capital = ALLOC_MAP[classification]
-
-    mod["capital"] = new_capital
-    mod.setdefault("log", []).append(f"[S12] 分級 {classification} → 資金 {new_capital}")
-
-    with open(path, "w") as f:
-        json.dump(mod, f, indent=2)
-
-    return mod["name"], classification, new_capital
-
-def run_allocation():
-    os.makedirs(MODULE_DIR, exist_ok=True)
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-    result_lines = []
-
+def load_modules():
+    records = []
     for file in os.listdir(MODULE_DIR):
         if not file.endswith(".json"):
             continue
         path = os.path.join(MODULE_DIR, file)
         try:
-            name, level, capital = process_module(path)
-            result_lines.append(f"{name} → {level} → {capital}")
-        except Exception as e:
-            result_lines.append(f"[!] 失敗：{file} → {e}")
+            with open(path, "r") as f:
+                mod = json.load(f)
+                if "sandbox_result" in mod:
+                    records.append(extract_sandbox(mod))
+        except:
+            continue
+    return records
 
-    with open(LOG_PATH, "w") as logf:
-        logf.write("\n".join(result_lines))
+def print_report(records):
+    print("=== 沙盤模擬總結（模組排行）===\n")
+    sorted_records = sorted(records, key=lambda x: x["profit"], reverse=True)
+    for i, r in enumerate(sorted_records, 1):
+        print(f"{i:>2}. {r['name']}｜{r['symbol']:>8}｜獲利: {r['profit']:>6.2f} USDT｜勝率: {r['win_rate']*100:>5.1f}%｜回合數: {r['rounds']}")
 
 if __name__ == "__main__":
-    run_allocation()
+    modules = load_modules()
+    if not modules:
+        print("[!] 找不到任何含 sandbox_result 的模組。")
+    else:
+        print_report(modules)
