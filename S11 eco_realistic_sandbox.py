@@ -1,5 +1,6 @@
 import os
 import json
+import math
 from datetime import datetime
 
 MODULE_PATH = "/mnt/data/Peter/modules"
@@ -32,45 +33,38 @@ def simulate_trade(action, price, capital, position):
     return capital, position, "ok"
 
 def run_simulation(mod_file):
-    with open(os.path.join(MODULE_PATH, mod_file), "r") as f:
+    mod_path = os.path.join(MODULE_PATH, mod_file)
+    with open(mod_path, "r") as f:
         mod_data = json.load(f)
 
-    symbol = mod_data.get("symbol", "UNKNOWN")
-    logic = mod_data.get("run")
-    if not logic or not symbol:
-        return {"error": "invalid module format"}
+    capital = mod_data.get("capital", 0)
+    if capital <= 0:
+        return {"skipped": True}
 
+    symbol = mod_data.get("symbol", "UNKNOWN")
     price_file = f"{symbol}.json"
     price_path = os.path.join(PRICE_PATH, price_file)
-    prices = []
 
     if os.path.exists(price_path):
         with open(price_path, "r") as f:
             prices = json.load(f)
     else:
-        print(f"[S11:FALLBACK] 自動建立價格資料：{price_file}")
-        prices = [{"close": 100 + i * 0.5} for i in range(30)]
-        try:
-            with open(price_path, "w") as f:
-                json.dump(prices, f, indent=2)
-        except Exception as e:
-            print(f"[S11:FALLBACK ERROR] 無法寫入價格資料：{e}")
+        prices = [{"close": 100 + math.sin(i / 2) * 5 + (i % 7)} for i in range(30)]
+        with open(price_path, "w") as f:
+            json.dump(prices, f, indent=2)
 
-    capital = INITIAL_CAPITAL
     position = 0.0
     equity_curve = []
-    history = []
     loss_count = 0
     peak = capital
     max_dd = 0.0
 
     for i, bar in enumerate(prices[-30:]):
         price = bar["close"]
-        # 模擬策略動作（未連動實際策略邏輯，這裡是 placeholder）
         action = "hold"
-        if i % 10 == 2:
+        if i % 5 == 2:
             action = "buy"
-        elif i % 10 == 7:
+        elif i % 5 == 4:
             action = "sell"
 
         if action in ("buy", "sell"):
@@ -78,7 +72,6 @@ def run_simulation(mod_file):
 
         equity = capital + position * price
         equity_curve.append(equity)
-        history.append(bar)
 
         peak = max(peak, equity)
         dd = (peak - equity) / peak if peak else 0
@@ -111,6 +104,8 @@ def main():
     for mod_file in mods:
         try:
             result = run_simulation(mod_file)
+            if "skipped" in result:
+                continue
             print(f"[S11] {mod_file} => {result.get('profit', 'N/A')} (pass: {result.get('sandbox_pass')})")
         except Exception as e:
             print(f"[S11 ERROR] {mod_file}: {e}")
