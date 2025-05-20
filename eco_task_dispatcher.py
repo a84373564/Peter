@@ -1,5 +1,4 @@
-# eco_task_dispatcher.py
-# S01：任務派遣者 – 根據資金與市場條件自動產生挑戰任務
+# Peter Project - S01 任務派遣者 eco_task_dispatcher.py
 
 import os
 import json
@@ -7,8 +6,8 @@ import random
 import requests
 from datetime import datetime
 
-KEY_PATH = "/mnt/data/hello/mexc_keys.json"
-OUTPUT_PATH = "/mnt/data/hello/task_spec.json"
+KEY_PATH = "/mnt/data/Peter/mexc_keys.json"
+OUTPUT_PATH = "/mnt/data/Peter/task_spec.json"
 
 def get_top_symbols(limit=5):
     try:
@@ -18,16 +17,19 @@ def get_top_symbols(limit=5):
         symbols = [d["symbol"] for d in sorted_data if d["symbol"].endswith("USDT")]
         return symbols[:limit]
     except Exception as e:
-        print(f"[!] 抓取熱門幣失敗：{e}")
+        print(f"[!] 熱門幣抓取失敗：{e}")
         return []
 
 def load_capital():
-    capital_path = "/mnt/data/hello/capital_tracker.json"
     try:
-        with open(capital_path, "r") as f:
-            return json.load(f).get("USDT", 100)
-    except:
-        return 100  # 預設資金
+        with open(KEY_PATH, "r") as f:
+            keys = json.load(f)
+        # 真實應用可接入 HMAC 簽名驗證，這裡簡化為手動資金
+        print("[✓] 測試版本使用固定資金：70.51 USDT")
+        return 70.51
+    except Exception as e:
+        print(f"[!] 金額讀取失敗，改用預設資金 70：{e}")
+        return 70
 
 def create_task_spec():
     symbols = get_top_symbols()
@@ -42,7 +44,7 @@ def create_task_spec():
     }
     with open(OUTPUT_PATH, "w") as f:
         json.dump(task, f, indent=2)
-    print(f"[✓] 任務已建立：{OUTPUT_PATH}")
+    print(f"[✓] 任務建立成功：{OUTPUT_PATH}")
     return task
 
 if __name__ == "__main__":
