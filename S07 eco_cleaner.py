@@ -6,13 +6,16 @@ import json
 MODULE_DIR = "/mnt/data/Peter/modules"
 
 def is_dead(mod):
-    return mod["genetics"].get("lifespan", 1) <= 0
+    lifespan = mod.get("genetics", {}).get("lifespan", 1)
+    return isinstance(lifespan, (int, float)) and lifespan <= 0
 
 def is_self_destruct(mod):
-    return mod.get("score", 0) < -20
+    score = mod.get("score", 0)
+    return isinstance(score, (int, float)) and score < -20
 
 def is_corrupted(mod):
-    return not mod.get("history") and not mod.get("log") and mod.get("score") is None
+    score = mod.get("score", None)
+    return not mod.get("history") and not mod.get("log") and score is None
 
 def clean_module(file_path):
     try:
@@ -30,6 +33,7 @@ def clean_module(file_path):
             print(f"[X] 清除無效模組：{os.path.basename(file_path)}")
         else:
             print(f"[✓] 保留模組：{os.path.basename(file_path)}")
+
     except Exception as e:
         print(f"[!] 清理錯誤：{file_path} → {e}")
 
