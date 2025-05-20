@@ -1,0 +1,28 @@
+#!/bin/bash
+# Omega Survivor Core - 王者掛機腳本 vΩ
+# 包含 S01～S10 + S07.5（自動欄位檢查）
+
+cd /mnt/data/Peter || exit 1
+
+run_step() {
+    echo "[>>>] 執行中：$1"
+    python3 "$1"
+    if [ $? -ne 0 ]; then
+        echo "[✘] 錯誤中斷：$1"
+        exit 99
+    fi
+}
+
+run_step eco_task_dispatcher.py
+run_step eco_module_builder.py
+run_step eco_simulation_engine.py
+run_step eco_fitness_evaluator.py
+run_step eco_execution_agent.py
+run_step eco_reproduction_engine.py
+run_step eco_cleaner.py
+run_step auto_schema_guard.py     # ← S07.5
+run_step eco_lineage_recorder.py
+run_step eco_royalty_manager.py
+run_step eco_lifecycle_controller.py
+
+echo "[✓] 本輪完成：$(date)"
